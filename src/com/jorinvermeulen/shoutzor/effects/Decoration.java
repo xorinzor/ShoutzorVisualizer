@@ -5,7 +5,6 @@ import java.util.List;
 import com.jme3.material.MatParamOverride;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
@@ -56,7 +55,6 @@ public class Decoration extends Effect {
         Spatial w2 = new Geometry("Box", wall2);
         w2.setMaterial(floor);
         w2.setLocalTranslation(25f, 12f, 0f);
-        w2.setQueueBucket(Bucket.Opaque);
         w2.addMatParamOverride(new MatParamOverride(VarType.Vector4, "Color", Utility.hexToRGBA("#333333")));
         
         //Pillar top-left

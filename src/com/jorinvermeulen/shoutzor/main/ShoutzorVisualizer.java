@@ -23,7 +23,6 @@ import ddf.minim.analysis.FFT;
 
 public class ShoutzorVisualizer extends SimpleApplication {
 
-	public String musicLocation;
 	private List<Effect> effectList;
 	private Minim minim;
 	private AudioPlayer song;
@@ -49,9 +48,6 @@ public class ShoutzorVisualizer extends SimpleApplication {
 		Quaternion rotation = cam.getRotation().fromAngles(0.29f, 2.355f, 0f);
 		cam.setRotation(rotation);
 		cam.setLocation(new Vector3f(-30f, 24f, 30f));
-		
-		//Add the music location
-		musicLocation = System.getProperty("user.dir") + "\\res\\music\\";
 		
 		//Add the assets location
 		String userHome = System.getProperty("user.dir") + "\\assets\\";
@@ -91,7 +87,7 @@ public class ShoutzorVisualizer extends SimpleApplication {
         addEffect(new AudioBars(this, -15f, 1f, -24.9f));
         addEffect(new Decoration(this));
         addEffect(new Logo(this, 32f, 20f, -5f));
-        addEffect(new NowPlaying(this, 23f, 18f, 0f));
+        addEffect(new NowPlaying(this, 23f, 2f, -15f));
         //addEffect(new Flames(this, 50f, 0f, -20f));
         
         this.setDisplayFps(true);
@@ -102,10 +98,6 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	
 	public void addEffect(Effect effect) {
 		effectList.add(effect);
-	}
-	
-	public String getMusicLocation() {
-		return this.musicLocation;
 	}
 	
 	public BeatDetect getBeatDetect() {
