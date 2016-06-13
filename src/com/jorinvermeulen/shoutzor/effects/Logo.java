@@ -74,7 +74,7 @@ public class Logo extends Effect {
 		float baseScale = 10f;
 		
 		if(kick) {
-			scale = baseScale + 1.5f;
+			scale = baseScale + 1f;
 			
 			ColorRGBA r1 = ColorRGBA.randomColor();
 			

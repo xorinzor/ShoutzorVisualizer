@@ -1,7 +1,9 @@
 package com.jorinvermeulen.shoutzor.main;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.FileLocator;
@@ -11,23 +13,33 @@ import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
 import com.jorinvermeulen.shoutzor.effects.AudioBars;
 import com.jorinvermeulen.shoutzor.effects.Effect;
+import com.jorinvermeulen.shoutzor.effects.Flames;
 import com.jorinvermeulen.shoutzor.effects.Decoration;
 import com.jorinvermeulen.shoutzor.effects.Logo;
 import com.jorinvermeulen.shoutzor.effects.NowPlaying;
 import com.jorinvermeulen.shoutzor.processing.MinimInput;
 
+import ddf.minim.AudioMetaData;
 import ddf.minim.AudioPlayer;
 import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
 import ddf.minim.analysis.FFT;
-
+import net.moraleboost.streamscraper.Scraper;
+import net.moraleboost.streamscraper.Stream;
+import net.moraleboost.streamscraper.scraper.IceCastScraper;
+	
 public class ShoutzorVisualizer extends SimpleApplication {
 
 	private List<Effect> effectList;
 	private Minim minim;
 	private AudioPlayer song;
+	private AudioMetaData meta;
 	private BeatDetect beat;
 	private FFT fft;
+	
+	private String nowPlaying;
+	
+	private String serverUrl = "http://relay4.slayradio.org:8000/";
 	
 	public static void main(String[] args)
 	{
@@ -59,7 +71,7 @@ public class ShoutzorVisualizer extends SimpleApplication {
 		int size = 1024;
 		
 		//song = minim.loadFile("http://jorinvermeulen.com/downloads/song.mp3", size);
-		song = minim.loadFile("http://relay4.slayradio.org:8000/", size);
+		song = minim.loadFile(this.serverUrl, size);
 		song.play();
 		
 		//beat = new BeatDetect(song.bufferSize(), song.sampleRate());
@@ -86,14 +98,33 @@ public class ShoutzorVisualizer extends SimpleApplication {
         //Add the scene elements
         addEffect(new AudioBars(this, -15f, 1f, -24.9f));
         addEffect(new Decoration(this));
-        addEffect(new Logo(this, 32f, 20f, -5f));
+        addEffect(new Logo(this, 32f, 20f, -4f));
+        addEffect(new Flames(this, 22f, 27.5f, -3f));
         addEffect(new NowPlaying(this, 23f, 2f, -15f));
-        //addEffect(new Flames(this, 50f, 0f, -20f));
         
         this.setDisplayFps(true);
         this.setDisplayStatView(false);
         
         rootNode.detachChildNamed("fpsText");
+        
+        this.getStreamMetaData();
+	}
+	
+	public void getStreamMetaData() {
+		try {
+			Scraper scraper = new IceCastScraper(); 
+			List<Stream> streams = scraper.scrape(new URI(this.serverUrl));
+		 
+			for (Stream stream : streams) { 
+				this.nowPlaying = stream.getCurrentSong();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String getNowPlaying() {
+		return this.nowPlaying;
 	}
 	
 	public void addEffect(Effect effect) {
@@ -108,8 +139,18 @@ public class ShoutzorVisualizer extends SimpleApplication {
 		return this.fft;
 	}
 	
+	private int metaDataUpdateCount = 0;
+	
 	@Override
 	public void simpleUpdate(float tpf) {
+		
+		metaDataUpdateCount++;
+		
+		if(metaDataUpdateCount > 1000) {
+			this.getStreamMetaData();
+			metaDataUpdateCount = 0;
+		}
+		
 		fft.forward(song.mix);
 		beat.detect(song.mix);
 		

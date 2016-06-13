@@ -31,7 +31,7 @@ import com.jorinvermeulen.shoutzor.main.ShoutzorVisualizer;
 
 import ddf.minim.analysis.FFT;
 
-public class Flames extends Effect {
+public class Flames_Realistic extends Effect {
 	
 	private float x;
 	private float y;
@@ -73,11 +73,11 @@ public class Flames extends Effect {
 	
 	private Spatial flamesRight;
 	
-	public Flames(ShoutzorVisualizer visualizer) {
+	public Flames_Realistic(ShoutzorVisualizer visualizer) {
 		this(visualizer, 0f, 0f, 0f);
 	}
 	
-	public Flames(ShoutzorVisualizer visualizer, float x, float y, float z) {
+	public Flames_Realistic(ShoutzorVisualizer visualizer, float x, float y, float z) {
 		super(visualizer, x, y, z);
 		
 		container = new Node();
@@ -94,13 +94,15 @@ public class Flames extends Effect {
 		this.canvasHeight = 100;
 		this.width = 5;
 		this.height = 5;
-		this.spacingX = 30;
-		this.spacingY = 30;
+		this.spacingX = 0;
+		this.spacingY = 0;
 		
-		decay = 0.85f;
+		decay = 0.90f;
 		rowCount = 20;
 		columnCount = this.fft.specSize() / this.divider;
 		
+		System.out.println(columnCount);
+		 
 		newState 		= new float[rowCount][columnCount];
 		currentState 	= new float[rowCount][columnCount];
 		fuel			= new float[columnCount];
@@ -117,7 +119,7 @@ public class Flames extends Effect {
 		boardTextureFlipped = new Texture2D(imageFlipped);
 
 		//Create the Quad to render
-		Quad quad = new Quad(11, 11);
+		Quad quad = new Quad(8, 8);
 
 		Spatial flamesLeft = new Geometry("box", quad);
 		flamesRight = new Geometry("box", quad);
@@ -130,12 +132,12 @@ public class Flames extends Effect {
 		flamesLeft.setQueueBucket(Bucket.Transparent);
 		flamesLeft.setMaterial(material);
 		flamesLeft.rotate(0f, -1.558f, -1.558f);
-		flamesLeft.setLocalTranslation(this.x, this.y, this.z - 11f);
+		flamesLeft.setLocalTranslation(this.x, this.y, this.z - 10f);
 		
 		flamesRight.setQueueBucket(Bucket.Transparent);
 		flamesRight.setMaterial(material);
 		flamesRight.rotate(0f, -1.558f, -1.558f);
-		flamesRight.setLocalTranslation(this.x, this.y, this.z + 11f);
+		flamesRight.setLocalTranslation(this.x, this.y, this.z + 10f);
 		flamesRight.addMatParamOverride(new MatParamOverride(VarType.Vector4, "ColorMap", boardTextureFlipped));
 		
 		container.attachChild(flamesLeft);
@@ -144,9 +146,15 @@ public class Flames extends Effect {
 		rootNode.attachChild(container);
 	}
 	
-	private int drawCount = 0;
-	
 	public void drawFlames() {
+		//Fill the canvas with a transparent background
+		g.setComposite(AlphaComposite.Clear);
+		g.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+		
+		//Start drawing on the transparent background
+		g.setComposite(AlphaComposite.Src);
+		g.setColor(Color.ORANGE);
+		
 		float size = 0f;
 		int k = 0;
 		
@@ -158,35 +166,10 @@ public class Flames extends Effect {
 				size += this.fft.getBand(k + j);
 			}
 			
-			size = size / this.divider;
-			
-			if(fuel[i] > 0)
-			{
-				fuel[i] = (size + fuel[i]) / 2;
-			} 
-			else 
-			{
-				fuel[i] = size;
-			}
+			fuel[i] = size / this.divider;
 			
 			k += this.divider;
 		}
-		
-		drawCount++;
-		
-		if(drawCount < 4) {
-			return;
-		}
-		
-		drawCount = 0;
-		
-		//Fill the canvas with a transparent background
-		g.setComposite(AlphaComposite.Clear);
-		g.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-		
-		//Start drawing on the transparent background
-		g.setComposite(AlphaComposite.Src);
-		g.setColor(Color.ORANGE);
 		
 		int rowIndex = 0;
 		int columnIndex = 0;
@@ -197,24 +180,30 @@ public class Flames extends Effect {
 			//Foreach column
 			for(float column : rows)
 			{				
-				float avg, el;
+				float avg, el1, el2, el3;
 				
 				//Check if we need to use fuel or not
 				//Dont use fuel
 				if(rowIndex > 0)
 				{
-					el = currentState[rowIndex-1][columnIndex];
+					el1 = (columnIndex < 1) ? 0 : currentState[rowIndex-1][columnIndex-1];
+					el2 = currentState[rowIndex-1][columnIndex];
+					el3 = (columnIndex+1 >= this.columnCount) ? 0 : currentState[rowIndex-1][columnIndex+1];
 				}
 				//Burn fuel
 				else 
 				{
-					el = fuel[columnIndex];
+					System.out.println(columnIndex);
+					el1 = (columnIndex < 1) ? 0 : fuel[columnIndex-1];
+					el2 = fuel[columnIndex];
+					el3 = (columnIndex+1 >= this.columnCount) ? 0 : fuel[columnIndex+1];
 				}
 				
-				if(el > 1f) el = 1f;
-				
 				//Get the average from the cubes below and add a random value for variety
-				avg = el * decay; //- ((float) (rand.nextDouble() * 0.1)));
+				avg = (el1 + el2 + el3) / 3;
+				avg = avg * ((decay - (float) (rowIndex * 0.01))- ((float) (rand.nextDouble() * 0.1)));
+						
+				if(avg > 1f) avg = 1f;
 				
 				newState[rowIndex][columnIndex] = avg;
 
@@ -241,13 +230,6 @@ public class Flames extends Effect {
 		boardTextureFlipped = new Texture2D(imageFlipped);
 		flamesRight.clearMatParamOverrides();
 		flamesRight.addMatParamOverride(new MatParamOverride(VarType.Texture2D, "ColorMap", boardTextureFlipped));
-		
-		//Reset fuel
-		k = 0;
-		for(int i = 0; i < columnCount; i++) {
-			fuel[i] = 0f;
-			k += this.divider;
-		}
 	}
 
 	public void draw(float tpf) {

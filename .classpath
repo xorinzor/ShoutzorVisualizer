@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="lib/Minim/mp3spi1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/Minim/tritonus_aos.jar"/>
 	<classpathentry kind="lib" path="lib/Minim/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="lib/StreamScraper.jar"/>
+	<classpathentry kind="lib" path="lib/jsoup-1.7.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

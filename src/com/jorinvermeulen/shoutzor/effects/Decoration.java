@@ -60,10 +60,10 @@ public class Decoration extends Effect {
         //Pillar top-left
         Spatial pb1 = new Geometry("Box", pillarBaseBox);
         pb1.setMaterial(pillarBase);
-        pb1.setLocalTranslation(-22.5f, 3f, -22.5f);
+        pb1.setLocalTranslation(-23.5f, 3f, -22.5f);
         Spatial pm1 = new Geometry("Box", pillarMiddle);
         pm1.setMaterial(pillarMiddleMat);
-        pm1.setLocalTranslation(-22.5f, 12f, -22.5f);
+        pm1.setLocalTranslation(-23.5f, 12f, -22.5f);
         
         //Pillar top-right
         Spatial pb2 = new Geometry("Box", pillarBaseBox);
@@ -79,10 +79,10 @@ public class Decoration extends Effect {
         //Pillar bottom-right
         Spatial pb3 = new Geometry("Box", pillarBaseBox);
         pb3.setMaterial(pillarBase);
-        pb3.setLocalTranslation(22.5f, 3f, 22.5f);
+        pb3.setLocalTranslation(22.5f, 3f, 23.5f);
         Spatial pm3 = new Geometry("Box", pillarMiddle);
         pm3.setMaterial(pillarMiddleMat);
-        pm3.setLocalTranslation(22.5f, 12f, 22.5f);
+        pm3.setLocalTranslation(22.5f, 12f, 23.5f);
         
         //Left wall - Line along the bottom
         Spatial llb = new Geometry("Box", lineLeftBox);
