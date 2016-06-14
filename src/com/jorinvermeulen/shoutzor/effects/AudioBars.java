@@ -91,12 +91,12 @@ public class AudioBars extends Effect {
 		
 		//Apply color effects
 		float total = 0f;
-		for(int i = 0; i < 7; i++) {
+		for(int i = 0; i < 5; i++) {
 			total += this.fft.getBand(i);
 		}
 		
-		total = total / 7f;
-		boolean kick = total > 85f;
+		total = total / 5f;
+		boolean kick = total > 95f;
 		
 		if(kick) {
 			audioBarScene.clearMatParamOverrides();

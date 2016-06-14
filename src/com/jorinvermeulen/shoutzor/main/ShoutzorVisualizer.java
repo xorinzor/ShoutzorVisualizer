@@ -11,6 +11,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.system.AppSettings;
 import com.jorinvermeulen.shoutzor.effects.AudioBars;
 import com.jorinvermeulen.shoutzor.effects.Effect;
 import com.jorinvermeulen.shoutzor.effects.Flames;
@@ -19,7 +20,6 @@ import com.jorinvermeulen.shoutzor.effects.Logo;
 import com.jorinvermeulen.shoutzor.effects.NowPlaying;
 import com.jorinvermeulen.shoutzor.processing.MinimInput;
 
-import ddf.minim.AudioMetaData;
 import ddf.minim.AudioPlayer;
 import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
@@ -33,7 +33,6 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	private List<Effect> effectList;
 	private Minim minim;
 	private AudioPlayer song;
-	private AudioMetaData meta;
 	private BeatDetect beat;
 	private FFT fft;
 	
@@ -44,6 +43,14 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	public static void main(String[] args)
 	{
 		ShoutzorVisualizer app = new ShoutzorVisualizer();
+		
+		AppSettings settings = new AppSettings(true);
+		settings.setFrameRate(60);
+		settings.setTitle("Shoutzor Visualizer");
+		settings.setMinHeight(1050);
+		settings.setMinWidth(1680);
+		app.setSettings(settings);
+		
         app.start(); // start the game
 	}
 	
@@ -99,8 +106,8 @@ public class ShoutzorVisualizer extends SimpleApplication {
         addEffect(new AudioBars(this, -15f, 1f, -24.9f));
         addEffect(new Decoration(this));
         addEffect(new Logo(this, 32f, 20f, -4f));
-        addEffect(new Flames(this, 22f, 27.5f, -3f));
-        addEffect(new NowPlaying(this, 23f, 2f, -15f));
+        addEffect(new Flames(this, 22f, 25.5f, -4f));
+        addEffect(new NowPlaying(this, 23f, 0f, -15f));
         
         this.setDisplayFps(true);
         this.setDisplayStatView(false);
@@ -146,7 +153,7 @@ public class ShoutzorVisualizer extends SimpleApplication {
 		
 		metaDataUpdateCount++;
 		
-		if(metaDataUpdateCount > 1000) {
+		if(metaDataUpdateCount > 700) {
 			this.getStreamMetaData();
 			metaDataUpdateCount = 0;
 		}

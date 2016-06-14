@@ -17,8 +17,6 @@ import com.jme3.texture.Texture2D;
 import com.jme3.texture.plugins.AWTLoader;
 import com.jorinvermeulen.shoutzor.main.ShoutzorVisualizer;
 
-import ddf.minim.AudioMetaData;
-
 public class NowPlaying extends Effect {
 	
 	private		float x;
@@ -114,10 +112,11 @@ public class NowPlaying extends Effect {
 		timeoutCounter++;
 		
 		g.drawString(visualizer.getNowPlaying(), vertScrollPosX, 80);
-		g.setColor(Color.BLACK);
-		g.drawString("Requested by:",0,150);
-		g.setColor(Color.ORANGE);
-		g.drawString("Xorinzor",0,200);
+		
+		//g.setColor(Color.BLACK);
+		//g.drawString("Requested by:",0,150);
+		//g.setColor(Color.ORANGE);
+		//g.drawString("Xorinzor",0,200);
 		
 		image = new AWTLoader().load(buffer, true);
 		boardTexture.setImage(image);
