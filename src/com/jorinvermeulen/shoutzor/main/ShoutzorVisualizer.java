@@ -1,12 +1,20 @@
 package com.jorinvermeulen.shoutzor.main;
 
-import java.net.URI;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.spi.CharsetProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.plugins.FileLocator;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
@@ -24,9 +32,6 @@ import ddf.minim.AudioPlayer;
 import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
 import ddf.minim.analysis.FFT;
-import net.moraleboost.streamscraper.Scraper;
-import net.moraleboost.streamscraper.Stream;
-import net.moraleboost.streamscraper.scraper.IceCastScraper;
 	
 public class ShoutzorVisualizer extends SimpleApplication {
 
@@ -36,9 +41,13 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	private BeatDetect beat;
 	private FFT fft;
 	
-	private String nowPlaying;
+	private String nowPlaying = "";
 	
-	private String serverUrl = "http://relay4.slayradio.org:8000/";
+	private String serverUrl = "http://192.168.178.117:8000/shoutzor";
+	private String shoutzorUrl = "http://192.168.178.117";
+	
+	private JsonParser jp;
+	private URL url;
 	
 	public static void main(String[] args)
 	{
@@ -56,6 +65,28 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	
 	@Override
 	public void simpleInitApp() {
+		
+		String baseIP = "";
+		
+		try {
+			baseIP = Utility.readFile("config.txt", StandardCharsets.UTF_8);
+		} catch (IOException e1) {
+			System.exit(-1);
+		}
+		
+		this.serverUrl = "http://" + baseIP + ":8000/shoutzor";
+		this.shoutzorUrl = "http://" + baseIP;
+		
+		String sURL = this.shoutzorUrl + "/shoutzorapi?method=nowplaying"; //just a string
+		
+		try {
+			url = new URL(sURL);
+		} catch (Exception e) {
+			System.exit(-1);
+		}
+		
+		jp = new JsonParser(); //from gson
+		
 		//initialize variables
 		effectList = new ArrayList<Effect>();
 		
@@ -67,10 +98,6 @@ public class ShoutzorVisualizer extends SimpleApplication {
 		Quaternion rotation = cam.getRotation().fromAngles(0.29f, 2.355f, 0f);
 		cam.setRotation(rotation);
 		cam.setLocation(new Vector3f(-30f, 24f, 30f));
-		
-		//Add the assets location
-		String userHome = System.getProperty("user.dir") + "\\assets\\";
-		assetManager.registerLocator(userHome, FileLocator.class);
 		
 		//Load music analysis
 		minim = new Minim(new MinimInput());
@@ -109,7 +136,7 @@ public class ShoutzorVisualizer extends SimpleApplication {
         addEffect(new Flames(this, 22f, 25.5f, -4f));
         addEffect(new NowPlaying(this, 23f, 0f, -15f));
         
-        this.setDisplayFps(true);
+        this.setDisplayFps(false);
         this.setDisplayStatView(false);
         
         rootNode.detachChildNamed("fpsText");
@@ -118,14 +145,51 @@ public class ShoutzorVisualizer extends SimpleApplication {
 	}
 	
 	public void getStreamMetaData() {
+		// Connect to the URL using java's native library
 		try {
-			Scraper scraper = new IceCastScraper(); 
-			List<Stream> streams = scraper.scrape(new URI(this.serverUrl));
-		 
-			for (Stream stream : streams) { 
-				this.nowPlaying = stream.getCurrentSong();
+			HttpURLConnection request = (HttpURLConnection) this.url.openConnection();
+			request.connect();
+			
+			// Convert to a JSON object to print data
+			JsonElement root = this.jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
+			JsonObject rootobj = root.getAsJsonObject().get("data").getAsJsonObject(); //May be an array, may be an object.
+			
+			String artistNowPlaying = "";
+			
+			if(rootobj.get("artist") != null) {
+				JsonArray artists = rootobj.get("artist").getAsJsonArray();
+				JsonObject artist;
+				for(int i = 0; i < artists.size(); i++)
+				{
+					artist = artists.get(i).getAsJsonObject();
+					
+					if(artistNowPlaying != "") {
+						artistNowPlaying += ", ";
+					}
+					
+					artistNowPlaying += artist.get("name").getAsString();
+				}
 			}
+			
+			if(artistNowPlaying == "") {
+				artistNowPlaying = "Unknown";
+			}
+			
+			String titleNowPlaying = "";
+			
+			if(rootobj.get("title") != null) {
+				titleNowPlaying = rootobj.get("title").getAsString();
+				
+			}
+			
+			if(titleNowPlaying == "") {
+				titleNowPlaying = "Untitled";
+			}
+			
+			this.nowPlaying = titleNowPlaying + " - " + artistNowPlaying;
+			
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
